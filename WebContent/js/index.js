@@ -135,7 +135,6 @@ function RHDialog(){
             label: "Sauvegarder",
             className: 'btn-success',
             callback: function(){
-                console.log("sauvegarder was clicked.")
                 ($('#answers').tableExport({
                   type:'csv',
                   csvSeparator: ';',
@@ -148,7 +147,6 @@ function RHDialog(){
             label: "Effacer",
             className: 'btn-danger',
             callback: function(){
-                console.log('Effacer was clicked.');
                 $.ajax({
                   type: 'POST',
                   // url: "AGT",
