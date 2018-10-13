@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatScore;
@@ -49,8 +47,8 @@ public class AnalyzeCustomerEngagementTone extends HttpServlet {
 		result.put("CLIENT", request.getRemoteAddr() + ":" + request.getRemotePort());
 		result.put("SERVER", request.getLocalAddr() + ":" + request.getLocalPort());
 		result.put("FROM", this.getServletName());
-		ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+//		ObjectMapper mapper = new ObjectMapper();
+//        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		
 		try{
 
@@ -71,7 +69,7 @@ public class AnalyzeCustomerEngagementTone extends HttpServlet {
 		        	UtteranceAnalyses analysis = ta.toneChat(tco).execute();
 		        	
 		        	if(analysis != null) {
-		        		Map<String, Object> history = (Map<String, Object>) request.getServletContext().getAttribute("history");
+		        		List<Map<String, Object>> historical = (List<Map<String, Object>>) request.getServletContext().getAttribute("historical");
 		        		List<ToneChatScore> tones = analysis.getUtterancesTone().get(0).getTones();
 		        		Map<String, Double> tonesMap = new HashMap<String, Double>();
 		        		
@@ -81,11 +79,15 @@ public class AnalyzeCustomerEngagementTone extends HttpServlet {
 			        		}
 		        		}
 		        		
-		        		history.put((String) parms.get("text"), tonesMap);
+		        		Map<String, Object> m = new HashMap<String, Object>();
+		        		m.put("TEXT", parms.get("text"));
+		        		m.put("TONES", tonesMap);
+		        		historical.add(m);
+		        		request.getServletContext().setAttribute("historical", historical);
+		        		
 			        	result.put("STATUS", "OK");
 			        	result.put("TEXT", parms.get("text"));
 		        		result.put("TONES", tonesMap);
-		        		result.put("HISTORY", history);
 		        		
 		        	}
 		        	else {

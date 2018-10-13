@@ -1,10 +1,15 @@
 package com.ekaly.web;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -31,6 +36,28 @@ public class Tools {
 		return null;
 	}
 	
+	public final static List<Map<String, Object>> fromJSON2ML(InputStream is){
+		List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
+		
+		try{
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(isr);
+	        ObjectMapper mapper = new ObjectMapper();
+	        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+			mapList = mapper.readValue(br, new TypeReference<List<Map<String, Object>>>(){});
+			return mapList;
+		}
+		catch(Exception e){
+			e.printStackTrace(System.err);
+		}
+		
+        return null;
+	}	
+	
+	public final static List<Map<String, Object>> fromJSON2ML(File file) throws FileNotFoundException{
+		return fromJSON2ML(new FileInputStream(file));
+	}
+	
 	public final static Map<String, Object> fromJSON(InputStream is){
 		Map<String, Object>	map = new HashMap<String, Object>();
 		
@@ -47,6 +74,10 @@ public class Tools {
 		}
 		
         return null;
+	}
+	
+	public final static Map<String, Object> fromJSON(File file) throws FileNotFoundException{
+		return fromJSON(new FileInputStream(file));
 	}
 	
 }

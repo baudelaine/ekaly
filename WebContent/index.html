@@ -31,7 +31,7 @@
         <form class="form-inline">
 
           <div class="form-group mx-sm-1 mb-2">
-            <textarea class="form-control" id="sentence" rows="1" cols="80" placeholder="Ecrire une phrase..."></textarea>
+            <textarea class="form-control" id="sentence" rows="1" cols="60" placeholder="Ecrire une phrase..."></textarea>
           </div>
 
           <div class="form-group mx-sm-1 mb-2">
@@ -44,6 +44,14 @@
 
           <div class="form-group mx-sm-1 mb-2">
             <button type="button" id="save" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Sauver l'historique"><span class="glyphicons glyphicons-floppy-save" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="form-group mx-sm-1 mb-2">
+            <button type="button" id="gHistorical" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Télécharger l'historique"><span class="glyphicons glyphicons-server" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="form-group mx-sm-1 mb-2">
+            <button type="button" id="rHistorical" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Effacer l'historique"><span class="glyphicons glyphicons-bin" aria-hidden="true"></span></button>
           </div>
 
         </form>
@@ -62,9 +70,13 @@
       <!-- Latest compiled JavaScript -->
       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
+      <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script> -->
+
       <!-- Latest compiled and minified JavaScript -->
       <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.js"></script>
       <script src="js/bootstrap-table-fr-FR.js"></script>
+
+      <script src="js/bootbox.min.js"></script>
 
       <script src="js/filesaver.js"></script>
       <script src="js/tableExport.min.js"></script>

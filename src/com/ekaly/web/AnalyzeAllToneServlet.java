@@ -14,8 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneAnalysis;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
@@ -44,7 +42,7 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "unused" })
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -53,8 +51,8 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 		result.put("CLIENT", request.getRemoteAddr() + ":" + request.getRemotePort());
 		result.put("SERVER", request.getLocalAddr() + ":" + request.getLocalPort());
 		result.put("FROM", this.getServletName());
-		ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+//		ObjectMapper mapper = new ObjectMapper();
+//        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		
 		try{
 
@@ -63,15 +61,18 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 	        if(parms != null && parms.get("text") != null) {
 	        	
 		        	ToneAnalyzer ta = (ToneAnalyzer) request.getServletContext().getAttribute("ta");
-	        		Map<String, Double> tonesMap = new HashMap<String, Double>();
 		        	
 		        	ToneOptions.Builder tob  = (ToneOptions.Builder) request.getServletContext().getAttribute("tob");
 		        	ToneInput ti = new ToneInput.Builder(parms.get("text").toString()).build();
 		        	ToneOptions to = tob.toneInput(ti).build();
 		        	ToneAnalysis tAnalysis = ta.tone(to).execute();
 		        	
+	        		List<Map<String, Object>> historical = (List<Map<String, Object>>) request.getServletContext().getAttribute("historical");
+		        	Map<String, Object> m = new HashMap<String, Object>();
+		        	m.put("TEXT", parms.get("text"));
+	        		Map<String, Double> tonesMap = new HashMap<String, Double>();
+		        	
 		        	if(tAnalysis != null) {
-		        		Map<String, Object> history = (Map<String, Object>) request.getServletContext().getAttribute("history");
 		        		List<ToneScore> tones = tAnalysis.getDocumentTone().getTones();
 		        		
 		        		if(tones != null) {
@@ -80,16 +81,13 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 			        		}
 		        		}
 		        		
-		        		history.put((String) ti.text(), tonesMap);
-			        	result.put("STATUS", "OK");
+		        		result.put("STATUS", "OK");
 			        	result.put("TEXT", ti.text());
 		        		result.put("TONES", tonesMap);
-		        		result.put("HISTORY", history);
 		        		
 		        	}
 		        	else {
 		        		result.put("ANSWER", "No valid ToneAnalysis object returned.");
-//		        		throw new Exception();
 		        	}
 		        	
 		        	ToneChatOptions.Builder tcob = (ToneChatOptions.Builder) request.getServletContext().getAttribute("tcob");
@@ -104,7 +102,6 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 		        	UtteranceAnalyses uAnalysis = ta.toneChat(tco).execute();
 		        	
 		        	if(uAnalysis != null) {
-		        		Map<String, Object> history = (Map<String, Object>) request.getServletContext().getAttribute("history");
 		        		List<ToneChatScore> tones = uAnalysis.getUtterancesTone().get(0).getTones();
 		        		
 		        		if(tones != null) {
@@ -112,18 +109,20 @@ public class AnalyzeAllToneServlet extends HttpServlet {
 			        			tonesMap.put(tone.getToneId(), tone.getScore());
 			        		}
 		        		}
-		        		
-		        		history.put((String) parms.get("text"), tonesMap);
-			        	result.put("STATUS", "OK");
+
+		        		result.put("STATUS", "OK");
 			        	result.put("TEXT", parms.get("text"));
 		        		result.put("TONES", tonesMap);
-		        		result.put("HISTORY", history);
 		        		
 		        	}
 		        	else {
 		        		result.put("ANSWER", "No valid UtteranceAnalyses object returned.");
 		        		throw new Exception();
 		        	}
+		        	
+	        		m.put("TONES", tonesMap);
+	        		historical.add(m);
+	        		request.getServletContext().setAttribute("historical", historical);
 		        	
 	        }
 	        else {

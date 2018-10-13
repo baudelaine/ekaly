@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -40,7 +40,7 @@ public class ContextListener implements ServletContextListener {
 	ToneAnalyzer ta;
 	ToneOptions.Builder tob;
 	ToneChatOptions.Builder tcob;
-	Map<String, Object> history = new HashMap<String, Object>();
+	List<Map<String, Object>> historical = new ArrayList<Map<String, Object>>();
 	
     /**
      * Default constructor. 
@@ -72,7 +72,7 @@ public class ContextListener implements ServletContextListener {
 				arg0.getServletContext().setAttribute("ta", ta);
 				arg0.getServletContext().setAttribute("tob", tob);
 				arg0.getServletContext().setAttribute("tcob", tcob);
-				arg0.getServletContext().setAttribute("history", history);
+				arg0.getServletContext().setAttribute("historical", historical);
     			
     		} catch (Exception e) {
     			// TODO Auto-generated catch block

@@ -78,22 +78,138 @@ $("#sentence").change(function (){
 })
 
 $('#save').click(function (){
-  ($('#answers').tableExport({
-    type:'csv',
-    csvSeparator: ';'
-  }));
+  if($('#answers').bootstrapTable('getData').length == 0){
+    ShowAlert("Rien à sauveagrder", "", "alert-info");
+  }
+  else{
+    ($('#answers').tableExport({
+      type:'csv',
+      csvSeparator: ';',
+      fileName: 'Watson-Tone-Analyzer-analyses'
+    }));
+  }
 })
 
 $('#erase').click(function (){
-  $('#sentence').val("");
-  $('#send').prop("disabled", true);
+
+    $('#sentence').val("");
+    $('#send').prop("disabled", true);
+})
+
+$('#rHistorical').click(function (){
+
+  $.ajax({
+    type: 'POST',
+    // url: "AGT",
+    // url: "ACET",
+    url: "GH",
+    dataType: 'json',
+    success: function(data) {
+
+      if(data.HISTORICAL.length == 0){
+        ShowAlert("Aucun historique", "", "alert-info");
+      }
+      else{
+        RHDialog();
+      }
+
+      },
+    error: function(data) {
+      console.log(data);
+    }
+  });
+
+})
+
+function RHDialog(){
+  bootbox.dialog({
+    title: "Effacer l'historique",
+    message: "Etes vous sûr de vouloir effacer l'historique ?",
+    closeButton: false,
+    buttons: {
+        cancel: {
+            label: "Annuler",
+            className: 'btn-default',
+        },
+        noclose: {
+            label: "Sauvegarder",
+            className: 'btn-success',
+            callback: function(){
+                console.log("sauvegarder was clicked.")
+                ($('#answers').tableExport({
+                  type:'csv',
+                  csvSeparator: ';',
+                  fileName: 'Watson-Tone-Analyzer-analyses'
+                }));
+                return false;
+            }
+        },
+        ok: {
+            label: "Effacer",
+            className: 'btn-danger',
+            callback: function(){
+                console.log('Effacer was clicked.');
+                $.ajax({
+                  type: 'POST',
+                  // url: "AGT",
+                  // url: "ACET",
+                  url: "RH",
+                  dataType: 'json',
+
+                  success: function(data) {
+                    $('#answers').bootstrapTable('removeAll');
+                    ShowAlert("Historique effacé avec succès.", "", "alert-success");
+                  },
+                  error: function(data) {
+                    console.log(data);
+                  }
+
+                });
+            }
+        }
+    }
+  });
+}
+
+
+$('#gHistorical').click(function (){
+
+  $.ajax({
+    type: 'POST',
+    // url: "AGT",
+    // url: "ACET",
+    url: "GH",
+    dataType: 'json',
+
+    success: function(data) {
+
+      if(data.HISTORICAL.length == 0){
+        ShowAlert("Aucun historique", "", "alert-info");
+      }
+      else{
+        var rows = [];
+        $.each(data.HISTORICAL, function(index, obj){
+          rows.push(loadDatas(obj)[0]);
+        })
+
+        $('#answers').bootstrapTable('load', rows);
+        $('#sentence').val("");
+        $('#send').prop("disabled", true);
+      }
+    },
+    error: function(data) {
+      console.log(data);
+    }
+
+  });
+
 })
 
 $('#send').click(function (){
   var text = $('#sentence').val();
 
   if(!$.trim(text)){
-    ShowAlert("Aucune phrase écrite", "Veuillez écrire une phrase.", "alert-warning");
+    ShowAlert("Il n'y a rien à envoyer.", "Veuillez écrire une phrase.", "alert-warning");
     return;
   }
 
@@ -109,6 +225,8 @@ $('#send').click(function (){
 
     success: function(data) {
       $('#answers').bootstrapTable('append', loadDatas(data));
+      $('#sentence').val("");
+      $('#send').prop("disabled", true);
     },
     error: function(data) {
       console.log(data);
@@ -119,6 +237,7 @@ $('#send').click(function (){
 })
 
 function loadDatas(data){
+
   var rows = [];
 
   rows.push({
