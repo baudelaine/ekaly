@@ -3,6 +3,7 @@ package com.ekaly.web;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,22 +17,22 @@ import javax.servlet.http.HttpServletResponse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneAnalysis;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneInput;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneScore;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatScore;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.Utterance;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.UtteranceAnalyses;
 
 /**
  * Servlet implementation class GetImportedKeysServlet
  */
-@WebServlet("/AGT")
-public class AnalyzeGeneralToneServlet extends HttpServlet {
+@WebServlet("/ACET")
+public class AnalyzeCustomerEngagementTone extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public AnalyzeGeneralToneServlet() {
+    public AnalyzeCustomerEngagementTone() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -58,31 +59,37 @@ public class AnalyzeGeneralToneServlet extends HttpServlet {
 	        if(parms != null && parms.get("text") != null) {
 	        	
 		        	ToneAnalyzer ta = (ToneAnalyzer) request.getServletContext().getAttribute("ta");
-		        	ToneOptions.Builder tob  = (ToneOptions.Builder) request.getServletContext().getAttribute("tob");
-		        	ToneInput ti = new ToneInput.Builder(parms.get("text").toString()).build();
-		        	ToneOptions to = tob.toneInput(ti).build();
-		        	ToneAnalysis analysis = ta.tone(to).execute();
+		        	ToneChatOptions.Builder tcob = (ToneChatOptions.Builder) request.getServletContext().getAttribute("tcob");
+
+		        	List<Utterance> us = new ArrayList<Utterance>();
+		        	us.add(new Utterance.Builder().text((String) parms.get("text")).build());
+		        	
+		        	ToneChatOptions tco = tcob
+		        			.utterances(us)
+		        			.build();
+
+		        	UtteranceAnalyses analysis = ta.toneChat(tco).execute();
 		        	
 		        	if(analysis != null) {
 		        		Map<String, Object> history = (Map<String, Object>) request.getServletContext().getAttribute("history");
-		        		List<ToneScore> tones = analysis.getDocumentTone().getTones();
+		        		List<ToneChatScore> tones = analysis.getUtterancesTone().get(0).getTones();
 		        		Map<String, Double> tonesMap = new HashMap<String, Double>();
 		        		
 		        		if(tones != null) {
-			        		for(ToneScore tone: tones) {
+			        		for(ToneChatScore tone: tones) {
 			        			tonesMap.put(tone.getToneId(), tone.getScore());
 			        		}
 		        		}
 		        		
-		        		history.put((String) ti.text(), tonesMap);
+		        		history.put((String) parms.get("text"), tonesMap);
 			        	result.put("STATUS", "OK");
-			        	result.put("TEXT", ti.text());
+			        	result.put("TEXT", parms.get("text"));
 		        		result.put("TONES", tonesMap);
 		        		result.put("HISTORY", history);
 		        		
 		        	}
 		        	else {
-		        		result.put("ANSWER", "No valid ToneAnalysis object returned.");
+		        		result.put("ANSWER", "No valid UtteranceAnalyses object returned.");
 		        		throw new Exception();
 		        	}
 	        }

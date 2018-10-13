@@ -1,27 +1,76 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta http-equiv="Cache-control" content="no-cache">
-	<meta http-equiv="Expires" content="-1">
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>e-kaly-Tone Analyzer</title>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-</head>
-<body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.css">
+    <link rel="stylesheet" href="css/glyphicons.css">
+    <link rel="stylesheet" href="css/index.css">
+
+  </head>
+  <body>
+
+      <div id='ajax_loader' style="position: fixed; left: 50%; top: 50%; display: none;">
+        <img src="img/ajax-loader.gif" width="250%" height="250%"></img>
+      </div>
+
+      <div id="Loading"></div>
+      <div id="alert"></div>
+
+      <nav class="navbar navbar-light bg-light">
+
+        <a class="navbar-brand" href="#">
+          <img src="img/Logo.jpg" width="25%" height="25%" class="d-inline-block align-top" alt="eKaly">
+        </a>
+
+        <form class="form-inline">
+
+          <div class="form-group mx-sm-1 mb-2">
+            <textarea class="form-control" id="sentence" rows="1" cols="80" placeholder="Ecrire une phrase..."></textarea>
+          </div>
+
+          <div class="form-group mx-sm-1 mb-2">
+            <button type="button" id="send" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Envoyer la phrase à Watson pour analyse."><span class="glyphicons glyphicons-cogwheels" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="form-group mx-sm-1 mb-2">
+            <button type="button" id="erase" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Effacer la phrase"><span class="glyphicons glyphicons-erase" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="form-group mx-sm-1 mb-2">
+            <button type="button" id="save" class="form-control btn btn-outline-dark gibtn" data-toggle="tooltip" data-placement="top" title="Sauver l'historique"><span class="glyphicons glyphicons-floppy-save" aria-hidden="true"></span></button>
+          </div>
+
+        </form>
+
+      </nav>
 
 
+      <table id="answers" class="table table-striped table-bordered" data-locale="fr-FR"></table>
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-  <!-- Latest compiled and minified JavaScript -->
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+      <!-- jQuery library -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
-  <script>
-    $(document)
-    .ready(function() {
-    })
+      <!-- Popper JS -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 
-  </script>
+      <!-- Latest compiled JavaScript -->
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 
-</body>
+      <!-- Latest compiled and minified JavaScript -->
+      <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.12.1/bootstrap-table.min.js"></script>
+      <script src="js/bootstrap-table-fr-FR.js"></script>
+
+      <script src="js/filesaver.js"></script>
+      <script src="js/tableExport.min.js"></script>
+
+      <script src="js/index.js"></script>
+
+
+  </body>
 </html>

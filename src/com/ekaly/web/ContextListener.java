@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,7 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
-import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneInput;
+import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
 
 /**
@@ -37,7 +38,9 @@ public class ContextListener implements ServletContextListener {
 	String realPath;
 	Properties props = new Properties();
 	ToneAnalyzer ta;
-	ToneOptions to;
+	ToneOptions.Builder tob;
+	ToneChatOptions.Builder tcob;
+	Map<String, Object> history = new HashMap<String, Object>();
 	
     /**
      * Default constructor. 
@@ -67,7 +70,9 @@ public class ContextListener implements ServletContextListener {
     			initTA();
     			System.out.println("TA has been initialized...");
 				arg0.getServletContext().setAttribute("ta", ta);
-				arg0.getServletContext().setAttribute("to", to);
+				arg0.getServletContext().setAttribute("tob", tob);
+				arg0.getServletContext().setAttribute("tcob", tcob);
+				arg0.getServletContext().setAttribute("history", history);
     			
     		} catch (Exception e) {
     			// TODO Auto-generated catch block
@@ -135,29 +140,29 @@ public class ContextListener implements ServletContextListener {
 		ta.setEndPoint(url);
 
 		try {
-			String tacl = props.getProperty("TA_CONTENT_LANGUAGE");
-			Boolean tas = Boolean.valueOf(props.getProperty("TA_SENTENCES"));
-			String taal = props.getProperty("TA_ACCEPT_LANGUAGE");
-			ToneInput ti = new ToneInput.Builder().text("Salut les p'tits gars !!!").build();
-			ToneOptions to = new ToneOptions.Builder()
-					  .contentLanguage(tacl)
-					  .sentences(tas)
-					  .acceptLanguage(taal)
-					  .toneInput(ti)
-					  .build();			
-			
-			System.out.println("to.toneInput()=" + to.toneInput());
-			System.out.println(ta.tone(to).execute());
+			tob = new ToneOptions.Builder()
+					  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+					  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
+					  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
 			
 		}
 		catch(Exception e) {
 			System.err.println("Warning: ToneOptions to was not build successfully !!!");
-			
 		}
 		
-		
+		try {
+			tcob = new ToneChatOptions.Builder()
+					.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+					.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
+			
+		}
+		catch(Exception e) {
+			System.err.println("Warning: ToneChatOptions to was not build successfully !!!");
+		}
 		
 		System.out.println(ta.getName() + " " + ta.getEndPoint());
+		System.out.println(tob);
+		System.out.println(tcob);
 		
 		return;
     }    
