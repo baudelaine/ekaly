@@ -342,3 +342,14 @@ function ShowAlert(title, message, alertType, area) {
       }, timeout);
     }
 }
+
+$('#logout').click(function (){
+  logout();
+})
+
+function logout(){
+
+  $('#modLogout').modal('toggle');
+
+  return;
+}
