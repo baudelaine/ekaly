@@ -1,0 +1,3 @@
+VCAP_SERVICES=$(/usr/local/bin/ibmcloud cf ssh app0 -c 'echo $VCAP_SERVICES' | awk 'NR==3')
+
+/usr/local/bin/ibmcloud service key-show ta0 user0 | awk 'NR>4'

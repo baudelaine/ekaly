@@ -9,6 +9,6 @@ fi
 
 rm -rf WebContent/WEB-INF/classes/*
 
-javac -cp wlp/*:WebContent/WEB-INF/lib/* -d WebContent/WEB-INF/classes/ src/com/ekaly/web/*.java src/com/ekaly/test/*.java
+javac -cp wlp/*:WebContent/WEB-INF/lib/* -d WebContent/WEB-INF/classes/ src/com/ekaly/web/*.java src/com/baudelaine/test/*.java src/com/baudelaine/tools/*.java       
 
 exit 0

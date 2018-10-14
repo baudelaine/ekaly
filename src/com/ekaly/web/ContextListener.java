@@ -18,10 +18,13 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.baudelaine.tools.Cmd;
+import com.baudelaine.tools.Tools;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneChatOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
@@ -64,8 +67,12 @@ public class ContextListener implements ServletContextListener {
     	    	
     			System.out.println("Context has been initialized...");
     			
-    			initVCAP_SERVICES();
-    			System.out.println("VCAP_SERVICES has been initialized...");
+    			vcap_services = initVCAP_SERVICES();
+    			if(vcap_services != null) {
+    				if(!vcap_services.trim().isEmpty()) {
+    					System.out.println("VCAP_SERVICES has been initialized...");
+    				}
+    			}
 
     			initTA();
     			System.out.println("TA has been initialized...");
@@ -89,7 +96,7 @@ public class ContextListener implements ServletContextListener {
 		System.out.println("Context has been destroyed...");    	
     }
     
-    public void initVCAP_SERVICES() throws FileNotFoundException, IOException{
+    public String initVCAP_SERVICES() throws FileNotFoundException, IOException{
     	
     	String value = props.getProperty("VCAP_SERVICES");
     	
@@ -97,72 +104,94 @@ public class ContextListener implements ServletContextListener {
 			Path path = Paths.get(realPath + value);
 			Charset charset = StandardCharsets.UTF_8;
 			if(Files.exists(path)){
-				vcap_services = new String(Files.readAllBytes(path), charset);
 				System.out.println("VCAP_SERVICES read from " + value + ".");
+				return new String(Files.readAllBytes(path), charset);
 			}
+	    	else{
+				System.out.println("VCAP_SERVICES read from System ENV.");
+	    		return System.getenv("VCAP_SERVICES");
+	    	}
     	}
-    	else{
-    		vcap_services = System.getenv("VCAP_SERVICES");
-			System.out.println("VCAP_SERVICES read from System ENV.");
-    	}
+    	
+    	return null;
 
     }
     
     @SuppressWarnings({ "unchecked", "unused" })
-	public void initTA() throws JsonParseException, JsonMappingException, IOException{
+	public void initTA() throws JsonParseException, JsonMappingException, IOException, InterruptedException{
 
-    	String serviceName = props.getProperty("TA_NAME");
-    	
-		ObjectMapper mapper = new ObjectMapper();
 		
 		String url = "";
 		String username = "";
 		String password = "";
 		String version = props.getProperty("TA_VERSION");
 		
-		Map<String, Object> input = mapper.readValue(vcap_services, new TypeReference<Map<String, Object>>(){});
-		
-		List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
-		
-		for(Map<String, Object> l0: l0s){
-			for(Map.Entry<String, Object> e: l0.entrySet()){
-				if(e.getKey().equalsIgnoreCase("credentials")){
-					System.out.println(e.getKey() + "=" + e.getValue());
-					Map<String, Object> credential = (Map<String, Object>) e.getValue();
-					url = (String) credential.get("url");
-					username = (String) credential.get("username");
-					password = (String) credential.get("password");
+		if(vcap_services != null && !vcap_services.trim().isEmpty()) {
+	    	String serviceName = props.getProperty("TA_NAME");
+	    	
+			Map<String, Object> input = Tools.fromJSON(vcap_services);
+			
+			List<Map<String, Object>> l0s = (List<Map<String, Object>>) input.get(serviceName);
+			
+			for(Map<String, Object> l0: l0s){
+				for(Map.Entry<String, Object> e: l0.entrySet()){
+					if(e.getKey().equalsIgnoreCase("credentials")){
+						System.out.println(e.getKey() + "=" + e.getValue());
+						Map<String, Object> credential = (Map<String, Object>) e.getValue();
+						url = (String) credential.get("url");
+						username = (String) credential.get("username");
+						password = (String) credential.get("password");
+					}
+				}
+			}
+		}
+		else {
+			Path path = Paths.get(realPath + (String) props.getProperty("TA_KEY_CMD"));
+
+			if(Files.exists(path)){
+				
+				Cmd cmd = (Cmd) Tools.fromJSON(path.toFile(), new TypeReference<Cmd>(){});
+				
+				if(cmd != null) {
+					Map<String, Object> key = Tools.fromJSON((String) cmd.run().get("OUTPUT"));
+					username = (String) key.get("username");
+					password = (String) key.get("password");
+					url = (String) key.get("url");
 				}
 			}
 		}
 		
-		ta = new ToneAnalyzer(version, username, password);
-		ta.setEndPoint(url);
-
-		try {
-			tob = new ToneOptions.Builder()
-					  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-					  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
-					  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
-			
-		}
-		catch(Exception e) {
-			System.err.println("Warning: ToneOptions to was not build successfully !!!");
-		}
+		if(StringUtils.isNoneEmpty(url, username, password)){
 		
-		try {
-			tcob = new ToneChatOptions.Builder()
-					.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
-					.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
+			ta = new ToneAnalyzer(version, username, password);
+			ta.setEndPoint(url);
+	
+			try {
+				tob = new ToneOptions.Builder()
+						  .contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+						  .sentences(Boolean.valueOf(props.getProperty("TA_SENTENCES")))
+						  .acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
+				
+			}
+			catch(Exception e) {
+				System.err.println("Warning: ToneOptions to was not build successfully !!!");
+			}
 			
-		}
-		catch(Exception e) {
-			System.err.println("Warning: ToneChatOptions to was not build successfully !!!");
-		}
-		
-		System.out.println(ta.getName() + " " + ta.getEndPoint());
-		System.out.println(tob);
-		System.out.println(tcob);
+			try {
+				tcob = new ToneChatOptions.Builder()
+						.contentLanguage(props.getProperty("TA_CONTENT_LANGUAGE"))
+						.acceptLanguage(props.getProperty("TA_ACCEPT_LANGUAGE"));
+				
+			}
+			catch(Exception e) {
+				System.err.println("Warning: ToneChatOptions to was not build successfully !!!");
+			}
+			
+			System.out.println(ta.getName() + " " + ta.getEndPoint());
+			System.out.println(tob);
+			System.out.println(tcob);
+			
+		}	
 		
 		return;
     }    
