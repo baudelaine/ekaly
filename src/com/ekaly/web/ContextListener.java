@@ -107,10 +107,10 @@ public class ContextListener implements ServletContextListener {
 				System.out.println("VCAP_SERVICES read from " + value + ".");
 				return new String(Files.readAllBytes(path), charset);
 			}
-	    	else{
-				System.out.println("VCAP_SERVICES read from System ENV.");
-	    		return System.getenv("VCAP_SERVICES");
-	    	}
+    	}
+    	else{
+			System.out.println("VCAP_SERVICES read from System ENV.");
+    		return System.getenv("VCAP_SERVICES");
     	}
     	
     	return null;
