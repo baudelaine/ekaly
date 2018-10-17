@@ -11,4 +11,4 @@ applications:
   mem: 256M
   instances: 1
   services:
-  - ta0
+  - ekalysvc0
